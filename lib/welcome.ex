@@ -2,14 +2,14 @@ defmodule Alice.Welcome do
   # import Ratatouille.Constants, only: [key: 1]
   import Ratatouille.View
 
-  def init do
+  def init(_arg) do
     %{}
   end
 
-  def update(model, msg) do
+  def update(_model, msg, _state) do
     case msg do
       _ ->
-        model
+        :ok
     end
   end
 
