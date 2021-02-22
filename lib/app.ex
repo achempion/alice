@@ -39,7 +39,7 @@ defmodule Alice.App do
           focus_pid = model[model[:focus]]
 
           case GenServer.call(focus_pid, {:update, event}) do
-            {:open_window, {open_module, open_args}} ->
+            {:window, {open_module, open_args}} ->
               Map.put(model, :window1, init_module(open_module, open_args))
               |> Map.put(:focus, :window1)
 
@@ -47,9 +47,19 @@ defmodule Alice.App do
               Map.put(model, :pane, init_module(open_module, open_args))
               |> Map.put(:focus, :pane)
 
-            :close ->
-              Logger.warn("not implemented")
-              model
+            {:close, pid} ->
+              {key, pid} = Enum.find(model, fn {k, v} -> v == pid end)
+
+              GenServer.stop(pid)
+
+              if key == :pane do
+                model
+                |> Map.put(:pane, nil)
+                |> Map.put(:focus, :window1)
+              else
+                model
+                |> Map.put(key, init_module(Welcome))
+              end
 
             :ok ->
               model
@@ -64,7 +74,7 @@ defmodule Alice.App do
 
   def render(model) do
     view do
-      GenServer.call(model[:window1], :render)
+      model[:window1] && GenServer.call(model[:window1], :render)
 
       if model[:pane] do
         panel title: "Pane" do

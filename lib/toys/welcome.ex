@@ -3,7 +3,7 @@ defmodule Alice.Toys.Welcome do
 
   state _ do
     %{
-      text: "Welcome to the alice editor!",
+      text: "Welcome to the alice editor!"
     }
   end
 
@@ -12,11 +12,11 @@ defmodule Alice.Toys.Welcome do
   end
 
   interaction :open_file_finder, :pane, [%{ch: ?o}], _state do
-    {Alice.Toys.Welcome, %{}}
+    {Alice.Toys.FileFinder, %{}}
   end
 
   interaction :close, :close, [%{ch: ?q}], _state do
-    # PID
+    self()
   end
 
   default_interaction state, _event do

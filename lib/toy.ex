@@ -2,6 +2,7 @@ defmodule Alice.Toy do
   defmacro __using__(_args) do
     quote do
       import Ratatouille.View
+      import Ratatouille.Constants, only: [key: 1]
       import unquote(__MODULE__)
 
       use GenServer
@@ -93,6 +94,9 @@ defmodule Alice.Toy do
 
           {:pane, pane} ->
             {:reply, {:pane, pane}, state}
+
+          {:window, pane} ->
+            {:reply, {:window, pane}, state}
 
           {:close, pid} ->
             {:reply, {:close, pid}, state}
