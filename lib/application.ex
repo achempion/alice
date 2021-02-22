@@ -1,6 +1,8 @@
 defmodule Alice.Application do
   use Application
 
+  alias Alice.ToysSupervisor
+
   def start(_type, _args) do
     children = [
       {
@@ -10,7 +12,8 @@ defmodule Alice.Application do
           quit_events: Alice.App.quit_events(),
           shutdown: :system
         ]
-      }
+      },
+      ToysSupervisor
     ]
 
     Supervisor.start_link(

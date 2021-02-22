@@ -1,27 +1,7 @@
 defmodule Alice.App do
   @moduledoc """
-
   Alice is an extendable elixir application with text editing
   abilities.
-
-  An application has a datamodel which can be modified by events.
-  After each modification we call the render function to the new user
-  interface based on the new data representation.
-
-  # Data model
-
-      %{
-        focus: :window_1,
-        window_1: "UUID",
-        pane: nil,
-        modules: %{
-          "UUID" => %{
-            module: ModuleName,
-            state: ModuleName.init()
-          }
-        }
-      }
-
   """
 
   @behaviour Ratatouille.App
@@ -30,87 +10,42 @@ defmodule Alice.App do
   import Ratatouille.Constants, only: [key: 1]
   require Logger
 
+  alias Alice.ToysSupervisor
+  alias Alice.Toys.Welcome
+
   def quit_events do
     [
       {:key, key(:ctrl_c)}
     ]
   end
 
-  @recompile %{key: key(:ctrl_r)}
-  @pane_file_finder %{key: key(:ctrl_o)}
-  @pane_opened_modules %{key: key(:ctrl_b)}
-
   def init(_context) do
     %{
-      focus: :window_1,
-      window_1: "Alice",
-      pane: [],
-      modules: %{
-        "Alice" => %{
-          module: Alice.Welcome,
-          state: Alice.Welcome.init(%{})
-        }
-      }
+      focus: :window1,
+      window1: init_module(Welcome),
+      pane: nil
     }
   end
 
   def init_module(module, args \\ %{}) do
-    key = NaiveDateTime.utc_now() |> NaiveDateTime.to_string()
-    {key, %{module: module, state: module.init(args)}}
+    {:ok, pid} = ToysSupervisor.start_child(module, args)
+    pid
   end
 
-  def open_window({key, module}, model) do
-    put_in(model, [:modules, key], module)
-    |> put_in([:window_1], key)
-    |> put_in([:focus], :window_1)
-  end
-
-  def open_pane({key, module}, model) do
-    put_in(model, [:modules, key], module)
-    |> put_in([:pane], [key | model[:pane]])
-    |> put_in([:focus], :pane)
-  end
-
-  def update(model, msg) do
-    case msg do
-      {:event, @pane_file_finder} ->
-        init_module(Alice.FileFinder) |> open_pane(model)
-
-      {:event, @pane_opened_modules} ->
-        init_module(Alice.OpenedModules, %{list: model[:modules] |> Map.to_list()})
-        |> open_pane(model)
-
-      {:event, @recompile} ->
-        IEx.Helpers.recompile()
-        model
-
+  def update(model, {:event, event}) do
+    case event do
       _ ->
         try do
-          module_key =
-            case model[:focus] do
-              :pane ->
-                model[:pane] |> hd
+          focus_pid = model[model[:focus]]
 
-              key ->
-                model[key]
-            end
-
-          module = model[:modules][module_key]
-
-          case module[:module].update(model, msg, module[:state]) do
+          case GenServer.call(focus_pid, {:update, event}) do
             {:open_window, {open_module, open_args}} ->
-              init_module(open_module, open_args) |> open_window(model)
+              Map.put(model, :window1, init_module(open_module, open_args))
+              |> Map.put(:focus, :window1)
 
-            {:open_pane} ->
-              Logger.warn("not implemented")
-              model
-
-            {:update_state, state} ->
-              put_in(model, [:modules, module_key, :state], state)
-
-            {:update_model} ->
-              Logger.warn("not implemented")
-              model
+            {:pane, {open_module, open_args}} ->
+              Map.put(model, :pane, init_module(open_module, open_args))
+              |> Map.put(:focus, :pane)
 
             :close ->
               Logger.warn("not implemented")
@@ -121,7 +56,6 @@ defmodule Alice.App do
           end
         rescue
           e ->
-            # Logger.error(e)
             Logger.error(Exception.format(:error, e, __STACKTRACE__))
             model
         end
@@ -129,15 +63,12 @@ defmodule Alice.App do
   end
 
   def render(model) do
-    window_1 = model[:modules][model[:window_1]]
-    pane_1 = if Enum.any?(model[:pane]), do: model[:modules][hd(model[:pane])], else: nil
-
     view do
-      window_1[:module].render(model, window_1[:state])
+      GenServer.call(model[:window1], :render)
 
-      if pane_1 do
-        panel title: pane_1[:module] |> to_string do
-          pane_1[:module].render(model, pane_1[:state])
+      if model[:pane] do
+        panel title: "Pane" do
+          GenServer.call(model[:pane], :render)
         end
       end
     end

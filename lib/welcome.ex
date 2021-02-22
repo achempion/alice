@@ -1,19 +1,41 @@
 defmodule Alice.Welcome do
-  # import Ratatouille.Constants, only: [key: 1]
   import Ratatouille.View
 
-  def init(_arg) do
-    %{}
+  use GenServer
+
+  def start_link(default) do
+    GenServer.start_link(__MODULE__, default)
   end
 
-  def update(_model, msg, _state) do
-    case msg do
+  @impl true
+  def init(args) do
+    {:ok, %{bindings: args[:bindings]}}
+  end
+
+  @impl true
+  def handle_call({:update, event, model}, _from, state) do
+    interaction = 1
+
+    case event do
+      :show_help ->
+        {:reply, :ok, state}
       _ ->
-        :ok
+        {:reply, :ok, state}
     end
   end
 
-  def render(_model, _data) do
-    label(content: "Welcome to the Alice Editor!")
+  @impl true
+  def handle_call(:render, _from, state) do
+    {:reply, label(content: "Welcome to the Alice Editor!"), state}
+  end
+
+  def interactions do
+    %{
+      show_help: %{
+        bindings: [
+          %{ch: ?h}
+        ]
+      }
+    }
   end
 end

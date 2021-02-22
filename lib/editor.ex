@@ -2,21 +2,32 @@ defmodule Alice.Editor do
   import Ratatouille.Constants, only: [key: 1]
   import Ratatouille.View
 
-  @arrow_left key(:arrow_left)
-  @arrow_right key(:arrow_right)
-  @arrow_up key(:arrow_up)
-  @arrow_down key(:arrow_down)
-  @spacebar key(:space)
-  @enter key(:enter)
-  @delete_keys [
-    key(:delete),
-    key(:backspace),
-    key(:backspace2)
-  ]
-  @ctrl_a key(:ctrl_a)
-  @ctrl_e key(:ctrl_e)
-  @alt_f %{ch: ?f, mod: 1}
-  @alt_b %{ch: ?b, mod: 1}
+  alias Alice.ToyInterface
+
+  @behaviour ToyInterface
+
+  @impl ToyInterface
+  def interactions do
+    %{
+      # Move general
+      move_left: %{title: "Move left", bindings: [%{key: key(:arrow_left)}]},
+      move_right: %{title: "Move right", bindings: [%{key: key(:arrow_right)}]},
+      move_up: %{title: "Move up", bindings: [%{key: key(:arrow_up)}]},
+      move_down: %{title: "Move down", bindings: [%{key: key(:arrow_down)}]},
+      # Move precise
+      move_at_line_start: %{title: "Move at line start", bindings: [%{key: key(:ctrl_a)}]},
+      move_at_line_end: %{title: "Move at line end", bindings: [%{key: key(:ctrl_e)}]},
+      move_at_word_after: %{title: "Move at word after", bindings: [%{ch: ?f, mod: 1}]},
+      move_at_word_before: %{title: "Move at word before", bindings: [%{ch: ?b, mod: 1}]},
+      # Special insert
+      insert_space: %{title: "Insert space", bindings: [%{key: key(:space)}]},
+      insert_new_line: %{title: "Insert new line", bindings: [%{key: key(:enter)}]},
+      delete_char: %{
+        title: "Delete char",
+        bindings: [%{key: key(:delete)}, %{key: key(:backspace)}, %{key: key(:backspace2)}]
+      }
+    }
+  end
 
   def init(%{path: path}) do
     ExTermbox.Constants.input_mode(:alt)
@@ -31,13 +42,16 @@ defmodule Alice.Editor do
       cursor_position: %{
         x: 0,
         y: 0
-      }
+      },
+      events: 1
     }
   end
 
-  def update(model, msg, state) do
-    case msg do
-      {:event, %{key: @arrow_right}} ->
+  def update(_model, {:event, event}, state) do
+    interaction = 1
+
+    case interaction do
+      {:event, :move_right} ->
         {:update_state, cursor_right(state)}
 
       {:event, %{key: @arrow_left}} ->
@@ -64,8 +78,8 @@ defmodule Alice.Editor do
       {:event, %{ch: char}} when char > 0 ->
         {:update_state, insert_char(state, <<char::utf8>>)}
 
-      {:event, %{key: key}} when key in @delete_keys ->
-        {:update_state, delete_char(state)}
+      # {:event, %{key: key}} when key in @delete_keys ->
+      #   {:update_state, delete_char(state)}
 
       {:event, %{key: @spacebar}} ->
         {:update_state, insert_char(state, " ")}

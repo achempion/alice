@@ -15,14 +15,15 @@ defmodule Alice.MixProject do
   def application do
     [
       mod: {Alice.Application, []},
-      extra_applications: [:logger]
+      extra_applications: [:logger],
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ratatouille, "~> 0.5.0"}
+      {:ratatouille, "~> 0.5.0"},
+      {:logger_file_backend, "~> 0.0.10"}
     ]
   end
 end
