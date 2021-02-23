@@ -16,8 +16,13 @@ defmodule Alice.Toys.FileFinder do
     Map.put(state, :index, state[:index] - 1)
   end
 
-  interaction :open_file, :window, [%{key: key(:enter)}], state do
-    {Alice.Toys.FileFinder, %{}}
+  interaction :open_file,
+              :window,
+              [
+                %{key: key(:enter)}
+              ],
+              %{files: files, index: i} do
+    {Alice.Toys.Editor, %{path: Enum.at(files, i)}}
   end
 
   interaction :close, :close, [%{ch: ?q}], _state do
@@ -28,7 +33,7 @@ defmodule Alice.Toys.FileFinder do
     state
   end
 
-  render state do
+  render state, _context do
     viewport(offset_y: 0) do
       for {file, idx} <- Enum.with_index(state[:files]) do
         if idx == state[:index] do

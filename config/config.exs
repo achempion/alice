@@ -5,5 +5,5 @@ config :logger,
 
 # configuration for the {LoggerFileBackend, :error_log} backend
 config :logger, :error_log,
-  path: "error.log",
-  level: :error
+  path: "error.log"
+

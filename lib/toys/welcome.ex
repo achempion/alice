@@ -34,7 +34,7 @@ defmodule Alice.Toys.Welcome do
     state
   end
 
-  render state do
+  render state, _context do
     label(content: state[:text])
   end
 end

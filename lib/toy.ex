@@ -62,12 +62,13 @@ defmodule Alice.Toy do
     end
   end
 
-  defmacro render(state, do: block) do
+  defmacro render(state, context, do: block) do
     block = Macro.escape(block)
     state = Macro.escape(state)
+    context = Macro.escape(context)
 
-    quote bind_quoted: [state: state, block: block] do
-      def handle_call(:render, _from, unquote(state)) do
+    quote bind_quoted: [state: state, context: context, block: block] do
+      def handle_call({:render, unquote(context)}, _from, unquote(state)) do
         {:reply, unquote(block), unquote(state)}
       end
     end

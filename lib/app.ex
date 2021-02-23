@@ -13,17 +13,23 @@ defmodule Alice.App do
   alias Alice.ToysSupervisor
   alias Alice.Toys.Welcome
 
+  @recompile %{key: key(:ctrl_r)}
+
   def quit_events do
     [
       {:key, key(:ctrl_c)}
     ]
   end
 
-  def init(_context) do
+  def init(%{window: %{height: height}}) do
+    a = 1
     %{
       focus: :window1,
       window1: init_module(Welcome),
-      pane: nil
+      pane: nil,
+      window: %{
+        height: height
+      }
     }
   end
 
@@ -34,6 +40,12 @@ defmodule Alice.App do
 
   def update(model, {:event, event}) do
     case event do
+      @recompile ->
+        Mix.shell(Alice.MixShell)
+        IEx.Helpers.recompile()
+
+        model
+
       _ ->
         try do
           focus_pid = model[model[:focus]]
@@ -48,7 +60,7 @@ defmodule Alice.App do
               |> Map.put(:focus, :pane)
 
             {:close, pid} ->
-              {key, pid} = Enum.find(model, fn {k, v} -> v == pid end)
+              {key, pid} = Enum.find(model, fn {_k, v} -> v == pid end)
 
               GenServer.stop(pid)
 
@@ -73,14 +85,19 @@ defmodule Alice.App do
   end
 
   def render(model) do
-    view do
-      model[:window1] && GenServer.call(model[:window1], :render)
+    context = %{window: model.window}
+    selected = "*selected*"
 
-      if model[:pane] do
-        panel title: "Pane" do
-          GenServer.call(model[:pane], :render)
+    view do
+      model[:window1] &&
+        panel title: "Window1 #{if model.focus == :window1, do: selected}", height: model.window.height - 10 do
+          GenServer.call(model[:window1], {:render, context})
         end
-      end
+
+      model[:pane] &&
+        panel title: "Pane #{if model.focus == :pane, do: selected}", height: 10 do
+          GenServer.call(model[:pane], {:render, context})
+        end
     end
   end
 end
