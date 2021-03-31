@@ -20,17 +20,6 @@ defmodule Alice.Toys.Welcome do
   end
 
   default_interaction state, _event do
-    # @pane_file_finder ->
-    #   init_module(Alice.FileFinder) |> open_pane(model)
-
-    #   @pane_opened_modules ->
-    #     init_module(Alice.OpenedModules, %{list: model[:modules] |> Map.to_list()})
-    #     |> open_pane(model)
-
-    #   @recompile ->
-    #     IEx.Helpers.recompile()
-    #     model
-
     state
   end
 

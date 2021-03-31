@@ -14,6 +14,8 @@ defmodule Alice.App do
   alias Alice.Toys.Welcome
 
   @recompile %{key: key(:ctrl_r)}
+  @close %{ch: ?w, mod: 1}
+  @switch_focus %{ch: ?s, mod: 1}
 
   def quit_events do
     [
@@ -22,7 +24,9 @@ defmodule Alice.App do
   end
 
   def init(%{window: %{height: height}}) do
-    a = 1
+    ExTermbox.Constants.input_mode(:alt)
+    |> ExTermbox.Bindings.select_input_mode()
+
     %{
       focus: :window1,
       window1: init_module(Welcome),
@@ -41,10 +45,14 @@ defmodule Alice.App do
   def update(model, {:event, event}) do
     case event do
       @recompile ->
-        Mix.shell(Alice.MixShell)
         IEx.Helpers.recompile()
-
         model
+
+      @close ->
+        close(model, model[model.focus])
+
+      @switch_focus ->
+        Map.put(model, :focus, if(model[:focus] == :pane, do: :window1, else: :pane))
 
       _ ->
         try do
@@ -60,18 +68,7 @@ defmodule Alice.App do
               |> Map.put(:focus, :pane)
 
             {:close, pid} ->
-              {key, pid} = Enum.find(model, fn {_k, v} -> v == pid end)
-
-              GenServer.stop(pid)
-
-              if key == :pane do
-                model
-                |> Map.put(:pane, nil)
-                |> Map.put(:focus, :window1)
-              else
-                model
-                |> Map.put(key, init_module(Welcome))
-              end
+              close(model, pid)
 
             :ok ->
               model
@@ -84,13 +81,38 @@ defmodule Alice.App do
     end
   end
 
+  def close(model, pid) do
+    {key, pid} = Enum.find(model, fn {_k, v} -> v == pid end)
+
+    DynamicSupervisor.terminate_child(ToysSupervisor, pid)
+
+    if key == :pane do
+      model
+      |> Map.put(:pane, nil)
+      |> Map.put(:focus, :window1)
+    else
+      pid =
+        case DynamicSupervisor.which_children(ToysSupervisor) |> List.first() do
+          {:undefined, pid, :worker, _module} ->
+            pid
+
+          _ ->
+            init_module(Welcome)
+        end
+
+      model
+      |> Map.put(key, pid)
+    end
+  end
+
   def render(model) do
     context = %{window: model.window}
     selected = "*selected*"
 
     view do
       model[:window1] &&
-        panel title: "Window1 #{if model.focus == :window1, do: selected}", height: model.window.height - 10 do
+        panel title: "Window1 #{if model.focus == :window1, do: selected}",
+              height: model.window.height - 10 do
           GenServer.call(model[:window1], {:render, context})
         end
 

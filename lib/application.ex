@@ -4,6 +4,8 @@ defmodule Alice.Application do
   alias Alice.ToysSupervisor
 
   def start(_type, _args) do
+    Mix.shell(Alice.MixShell)
+
     children = [
       {
         Ratatouille.Runtime.Supervisor,
