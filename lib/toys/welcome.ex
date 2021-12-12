@@ -15,6 +15,11 @@ defmodule Alice.Toys.Welcome do
     {Alice.Toys.FileFinder, %{}}
   end
 
+  interaction :start_observer, :stat, [%{ch: ?s}], state do
+    :observer.start()
+    state
+  end
+
   interaction :close, :close, [%{ch: ?q}], _state do
     self()
   end

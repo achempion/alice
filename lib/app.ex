@@ -42,6 +42,10 @@ defmodule Alice.App do
     pid
   end
 
+  def update(model, {:resize, _event}) do
+    model
+  end
+
   def update(model, {:event, event}) do
     case event do
       @recompile ->
