@@ -11,10 +11,11 @@ defmodule Alice.App do
   require Logger
 
   alias Alice.ToysSupervisor
-  alias Alice.Toys.Welcome
+  alias Alice.Toys.{Welcome, ToyHelp}
 
   @recompile %{key: key(:ctrl_r)}
-  @close %{ch: ?w, mod: 1}
+  @close %{ch: ?q, mod: 1}
+  @help %{ch: ??, mod: 1}
   @switch_focus %{ch: ?s, mod: 1}
 
   def quit_events do
@@ -57,6 +58,12 @@ defmodule Alice.App do
 
       @switch_focus ->
         Map.put(model, :focus, if(model[:focus] == :pane, do: :window1, else: :pane))
+
+      @help ->
+        focus_pid = model[model[:focus]]
+
+        Map.put(model, :window1, init_module(ToyHelp, focus_pid))
+        |> Map.put(:focus, :window1)
 
       _ ->
         try do

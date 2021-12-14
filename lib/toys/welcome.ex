@@ -3,7 +3,11 @@ defmodule Alice.Toys.Welcome do
 
   state _ do
     %{
-      text: "Welcome to the alice editor!"
+      text: """
+      Welcome to the Alice editor!
+
+      Press Alt-? for help.
+      """
     }
   end
 
@@ -15,8 +19,13 @@ defmodule Alice.Toys.Welcome do
     {Alice.Toys.FileFinder, %{}}
   end
 
-  interaction :start_observer, :stat, [%{ch: ?s}], state do
+  interaction :start_observer, :state, [%{ch: ?s}], state do
     :observer.start()
+    state
+  end
+
+  interaction :restart_editor, :state, [%{ch: ?r}], state do
+    Supervisor.restart_child(Ratatouille.Runtime.Supervisor, Ratatouille.Window )
     state
   end
 

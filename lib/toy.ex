@@ -8,6 +8,7 @@ defmodule Alice.Toy do
       use GenServer
 
       @bindings %{}
+      @interactions []
       @before_compile unquote(__MODULE__)
     end
   end
@@ -32,6 +33,7 @@ defmodule Alice.Toy do
             state: state,
             block: block
           ] do
+      @interactions [%{name: name, bindings: bindings, type: type} | @interactions]
       @bindings Enum.reduce(
                   bindings,
                   @bindings,
@@ -102,6 +104,27 @@ defmodule Alice.Toy do
           {:close, pid} ->
             {:reply, {:close, pid}, state}
         end
+      end
+
+      def handle_call(:help, _from, state) do
+        interactions =
+          @interactions
+          |> Enum.map(fn interaction ->
+            bindings =
+              interaction[:bindings]
+              |> Enum.map(fn %{ch: ch} -> ch end)
+
+            "#{interaction[:name]} (#{interaction[:type]}) #{bindings}"
+          end)
+
+        help = """
+        Module: #{__MODULE__}
+
+        Interactions:
+        #{interactions |> Enum.join("\n\n")}
+        """
+
+        {:reply, help, state}
       end
     end
   end
