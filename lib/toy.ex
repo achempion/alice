@@ -112,7 +112,12 @@ defmodule Alice.Toy do
           |> Enum.map(fn interaction ->
             bindings =
               interaction[:bindings]
-              |> Enum.map(fn %{ch: ch} -> ch end)
+              |> Enum.map(fn binding ->
+            case binding do
+              %{ch: ch} -> ch
+              %{key: key} -> key
+            end
+          end)
 
             "#{interaction[:name]} (#{interaction[:type]}) #{bindings}"
           end)

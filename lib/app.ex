@@ -1,7 +1,6 @@
 defmodule Alice.App do
   @moduledoc """
-  Alice is an extendable elixir application with text editing
-  abilities.
+  Emacs-like extendable operating system.
   """
 
   @behaviour Ratatouille.App
