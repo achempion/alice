@@ -19,6 +19,10 @@ defmodule Alice.Toys.Welcome do
     {Alice.Toys.FileFinder, %{}}
   end
 
+  interaction :open_active_applications, :pane, [%{ch: ?a}], _state do
+    {Alice.Toys.ActiveApplications, %{}}
+  end
+
   interaction :start_observer, :state, [%{ch: ?s}], state do
     :observer.start()
     state
