@@ -25,3 +25,6 @@ alice-*.tar
 
 # Temporary files for e.g. tests
 /tmp
+
+# Editor errors
+error.log
