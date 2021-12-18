@@ -28,6 +28,11 @@ defmodule Alice.Toys.Welcome do
     state
   end
 
+  interaction :log_message, :state, [%{ch: ?l}], state do
+    Logger.info("message")
+    state
+  end
+
   interaction :restart_editor, :state, [%{ch: ?r}], state do
     Supervisor.restart_child(Ratatouille.Runtime.Supervisor, Ratatouille.Window )
     state

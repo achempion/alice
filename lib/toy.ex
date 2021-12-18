@@ -1,6 +1,7 @@
 defmodule Alice.Toy do
   defmacro __using__(_args) do
     quote do
+      require Logger
       import Ratatouille.View
       import Ratatouille.Constants, only: [key: 1]
       import unquote(__MODULE__)

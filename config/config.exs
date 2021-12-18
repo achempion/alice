@@ -1,9 +1,9 @@
 import Config
 
 config :logger,
-  backends: [{LoggerFileBackend, :error_log}]
+  backends: [{LoggerFileBackend, :log}]
 
 # configuration for the {LoggerFileBackend, :error_log} backend
-config :logger, :error_log,
-  path: "error.log"
+config :logger, :log,
+  path: "messages.log"
 
