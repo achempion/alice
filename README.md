@@ -8,6 +8,14 @@ Emacs-like extendable operating system.
 
 ## Setup
 
+### Dependencies
+
+In order or build `termbox`
+- make (build-essential)
+- python (2.7 or 3+)
+
+### Launching
+
 ```sh
 $ mix deps.get
 $ bin/alice
