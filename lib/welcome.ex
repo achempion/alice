@@ -13,7 +13,7 @@ defmodule Alice.Welcome do
   end
 
   @impl true
-  def handle_call({:update, event, model}, _from, state) do
+  def handle_call({:update, event, _model}, _from, state) do
     interaction = 1
 
     case event do

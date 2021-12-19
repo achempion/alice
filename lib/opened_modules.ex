@@ -14,7 +14,7 @@ defmodule Alice.OpenedModules do
     }
   end
 
-  def update(model, msg, state) do
+  def update(_model, msg, state) do
     case msg do
       {:event, @next} ->
         {:update_state, put_in(state, [:index], next_index(state))}
