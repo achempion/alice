@@ -28,9 +28,8 @@ defmodule Alice.Toys.Welcome do
     state
   end
 
-  interaction :log_message, :state, [%{ch: ?l}], state do
-    Alice.Helpers.Toys.list() |> IO.inspect()
-    state
+  interaction :log_message, :pane, [%{ch: ?l}], state do
+    {Alice.Toys.Launcher, %{}}
   end
 
   interaction :restart_editor, :state, [%{ch: ?r}], state do

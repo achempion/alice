@@ -7,10 +7,8 @@ defmodule Alice.Helpers.Toys do
 
     toys
     |> Enum.reduce([], fn toy, acc ->
-      toy_name = to_string(toy)
-
-      if String.match?(toy_name, ~r/\.Toys\./) do
-        [{toy, toy_name} | acc]
+      if String.match?(to_string(toy), ~r/\.Toys\./) do
+        [toy | acc]
       else
         acc
       end
