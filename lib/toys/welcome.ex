@@ -29,12 +29,12 @@ defmodule Alice.Toys.Welcome do
   end
 
   interaction :log_message, :state, [%{ch: ?l}], state do
-    Logger.info("message")
+    Alice.Helpers.Toys.list() |> IO.inspect()
     state
   end
 
   interaction :restart_editor, :state, [%{ch: ?r}], state do
-    Supervisor.restart_child(Ratatouille.Runtime.Supervisor, Ratatouille.Window )
+    Supervisor.restart_child(Ratatouille.Runtime.Supervisor, Ratatouille.Window)
     state
   end
 
