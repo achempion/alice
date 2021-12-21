@@ -13,8 +13,8 @@ defmodule Alice.Toys.Launcher do
     %{SearchableList => SearchableList.state(list)}
   end
 
-  default_interaction state, _event do
-    state
+  default_interaction state, event do
+    SearchableList.interaction(state, SearchableList, event)
   end
 
   render state, _context do
