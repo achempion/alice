@@ -28,7 +28,7 @@ defmodule Alice.Toys.Welcome do
     state
   end
 
-  interaction :log_message, :pane, [%{ch: ?l}], state do
+  interaction :launch_launcher, :pane, [%{ch: ?l}], state do
     {Alice.Toys.Launcher, %{}}
   end
 

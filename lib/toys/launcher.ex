@@ -5,13 +5,12 @@ defmodule Alice.Toys.Launcher do
   use Alice.Toy
 
   alias Alice.Helpers.Toys
+  alias Alice.Behaviours.SearchableList
 
   state _ do
-    list = Toys.list() |> Enum.map(fn toy -> %{label: to_string(toy)} end)
-    %{
-      index: 0,
-      list: list
-    }
+    list = Toys.list() |> Enum.map(&to_string/1)
+
+    %{SearchableList => SearchableList.state(list)}
   end
 
   default_interaction state, _event do
@@ -19,14 +18,6 @@ defmodule Alice.Toys.Launcher do
   end
 
   render state, _context do
-    viewport(offset_y: 0) do
-      for {item, index} <- Enum.with_index(state[:list]) do
-        if index == state[:index] do
-          label(content: item[:label], attributes: [:bold])
-        else
-          label(content: item[:label])
-        end
-      end
-    end
+    SearchableList.render(state, SearchableList)
   end
 end
