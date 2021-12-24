@@ -1,6 +1,9 @@
 defmodule Alice.App do
   @moduledoc """
-  Emacs-like extendable operating system.
+  Main point of an editor to mange the layout
+
+  It keeps layout data structure also handles state updates and opens
+  new panes and buffers
   """
 
   @behaviour Ratatouille.App
@@ -17,6 +20,9 @@ defmodule Alice.App do
   @help %{ch: ??, mod: 1}
   @switch_focus %{ch: ?s, mod: 1}
 
+  @doc """
+  How to quit vim
+  """
   def quit_events do
     [
       {:key, key(:ctrl_c)}
@@ -24,9 +30,12 @@ defmodule Alice.App do
   end
 
   def init(%{window: %{height: height}}) do
+    # Enable alt-<char> combinations as one event, if a default is
+    # :esc mode it sends alt event as a separate message
     ExTermbox.Constants.input_mode(:alt)
     |> ExTermbox.Bindings.select_input_mode()
 
+    # main layout data structure
     %{
       focus: :window1,
       window1: init_module(Welcome),
@@ -37,16 +46,25 @@ defmodule Alice.App do
     }
   end
 
+  @doc """
+  Start an interactive module as a separate process and add it to
+  dynamic supervisor
+  """
   def init_module(module, args \\ %{}) do
     {:ok, pid} = ToysSupervisor.start_child(module, args)
     pid
   end
 
+  # ingore resize event
   def update(model, {:resize, _event}) do
     model
   end
 
+  @doc """
+  Main function to hande all editor event (mostly key presses)
+  """
   def update(model, {:event, event}) do
+    # global events is on top
     case event do
       @recompile ->
         IEx.Helpers.recompile()
@@ -65,56 +83,78 @@ defmodule Alice.App do
         |> Map.put(:focus, :window1)
 
       _ ->
-        try do
-          focus_pid = model[model[:focus]]
-
-          case GenServer.call(focus_pid, {:update, event}) do
-            {:window, {open_module, open_args}} ->
-              Map.put(model, :window1, init_module(open_module, open_args))
-              |> Map.put(:focus, :window1)
-
-            {:pane, {open_module, open_args}} ->
-              Map.put(model, :pane, init_module(open_module, open_args))
-              |> Map.put(:focus, :pane)
-
-            {:close, pid} ->
-              close(model, pid)
-
-            :ok ->
-              model
-          end
-        rescue
-          e ->
-            Logger.error(Exception.format(:error, e, __STACKTRACE__))
-            model
-        end
+        # handle rest of the events
+        handle_event(model, event)
     end
   end
 
+  @doc """
+  Pass an event to an app in focus and optionally modify a current
+  layout
+  """
+  def handle_event(model, event) do
+    try do
+      focus_pid = model[model[:focus]]
+
+      # pass an even to an app in a focus
+      case GenServer.call(focus_pid, {:update, event}) do
+        {:window, {open_module, open_args}} ->
+          # open a window
+          Map.put(model, :window1, init_module(open_module, open_args))
+          |> Map.put(:focus, :window1)
+
+        {:pane, {open_module, open_args}} ->
+          # open a pane
+          Map.put(model, :pane, init_module(open_module, open_args))
+          |> Map.put(:focus, :pane)
+
+        {:close, pid} ->
+          # close an app
+          close(model, pid)
+
+        :ok ->
+          # nothing to update in a layout
+          model
+      end
+    rescue
+      e ->
+        Logger.error(Exception.format(:error, e, __STACKTRACE__))
+        model
+    end
+  end
+
+  @doc """
+  Terminate running process and find a replacement
+  """
   def close(model, pid) do
-    {key, pid} = Enum.find(model, fn {_k, v} -> v == pid end)
+    {buffer_type, pid} = Enum.find(model, fn {_k, v} -> v == pid end)
 
     DynamicSupervisor.terminate_child(ToysSupervisor, pid)
 
-    if key == :pane do
+    if buffer_type == :pane do
       model
       |> Map.put(:pane, nil)
       |> Map.put(:focus, :window1)
     else
+      # try to find a replacement to display in a :window
       pid =
         case DynamicSupervisor.which_children(ToysSupervisor) |> List.first() do
           {:undefined, pid, :worker, _module} ->
             pid
 
           _ ->
+            # no replacement, start default screen
             init_module(Welcome)
         end
 
       model
-      |> Map.put(key, pid)
+      |> Map.put(buffer_type, pid)
     end
   end
 
+  @doc """
+  Main layout of the editor
+  """
   def render(model) do
     context = %{window: model.window}
     selected = "*selected*"
