@@ -38,7 +38,7 @@ defmodule Alice.Behaviour do
                 )
 
       def unquote(name)(unquote(state), unquote(key)) do
-        unquote(block)
+        {unquote(type), unquote(block)}
       end
     end
   end
@@ -51,7 +51,7 @@ defmodule Alice.Behaviour do
         if interaction do
           apply(__MODULE__, interaction, [state, key])
         else
-          state
+          {:state, state}
         end
       end
     end
