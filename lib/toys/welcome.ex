@@ -11,10 +11,6 @@ defmodule Alice.Toys.Welcome do
     }
   end
 
-  interaction :insert_hi, :state, [%{ch: ?i}], state do
-    Map.put(state, :text, state[:text] <> " hi")
-  end
-
   interaction :open_file_finder, :pane, [%{ch: ?o}], _state do
     {Alice.Toys.FileFinder, %{}}
   end
@@ -30,6 +26,10 @@ defmodule Alice.Toys.Welcome do
 
   interaction :launch_launcher, :pane, [%{ch: ?l}], state do
     {Alice.Toys.Launcher, %{}}
+  end
+
+  interaction :run_eval, :window, [%{ch: ?e}], state do
+    {Alice.Toys.Eval, %{}}
   end
 
   interaction :restart_editor, :state, [%{ch: ?r}], state do
