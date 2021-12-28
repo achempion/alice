@@ -14,6 +14,7 @@ defmodule Alice.App do
 
   alias Alice.ToysSupervisor
   alias Alice.Toys.{Welcome, ToyHelp}
+  alias Alice.ScreenHelper
 
   @recompile %{key: key(:ctrl_r)}
   @close %{ch: ?q, mod: 1}
@@ -67,7 +68,12 @@ defmodule Alice.App do
     # global events is on top
     case event do
       @recompile ->
-        IEx.Helpers.recompile()
+        IEx.Helpers.recompile(force: true)
+
+        # as the recompilation generates bunch of messages, we want to
+        # clear the whole screen after that
+        ScreenHelper.clear()
+
         model
 
       @close ->
