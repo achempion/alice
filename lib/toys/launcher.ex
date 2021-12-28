@@ -4,11 +4,11 @@ defmodule Alice.Toys.Launcher do
   """
   use Alice.Toy
 
-  alias Alice.Helpers.Toys
+  alias Alice.ToysHelper
   alias Alice.Behaviours.SearchableList
 
   state _ do
-    list = Toys.list() |> Enum.map(&to_string/1)
+    list = ToysHelper.list() |> Enum.map(&to_string/1)
 
     %{SearchableList => SearchableList.state(list)}
   end

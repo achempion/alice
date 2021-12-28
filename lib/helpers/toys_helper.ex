@@ -1,4 +1,4 @@
-defmodule Alice.Helpers.Toys do
+defmodule Alice.ToysHelper do
   @doc """
   Returns list of all interactive modules
   """
