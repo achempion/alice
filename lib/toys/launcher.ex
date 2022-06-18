@@ -18,7 +18,7 @@ defmodule Alice.Toys.Launcher do
     updated_state
   end
 
-  render state, _context do
-    SearchableList.render(state, SearchableList)
+  render state, context do
+    SearchableList.render(context, state, SearchableList)
   end
 end

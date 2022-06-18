@@ -68,8 +68,9 @@ defmodule Alice.App do
     # global events is on top
     case event do
       @recompile ->
-        IEx.Helpers.recompile(force: true)
+        IEx.Helpers.recompile()
 
+        # System.cmd("mix", ["compile"])
         # as the recompilation generates bunch of messages, we want to
         # clear the whole screen after that
         ScreenHelper.clear()
@@ -169,12 +170,24 @@ defmodule Alice.App do
       model[:window1] &&
         panel title: "Window1 #{if model.focus == :window1, do: selected}",
               height: model.window.height - 10 do
-          GenServer.call(model[:window1], {:render, context})
+          GenServer.call(
+            model[:window1],
+            {
+              :render,
+              context |> Map.merge(%{current_panel: %{height: model.window.height - 10}})
+            }
+          )
         end
 
       model[:pane] &&
         panel title: "Pane #{if model.focus == :pane, do: selected}", height: 10 do
-          GenServer.call(model[:pane], {:render, context})
+          GenServer.call(
+            model[:pane],
+            {
+              :render,
+              context |> Map.merge(%{current_panel: %{height: 10}})
+            }
+          )
         end
     end
   end
