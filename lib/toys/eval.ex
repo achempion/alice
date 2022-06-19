@@ -8,13 +8,14 @@ defmodule Alice.Toys.Eval do
     }
   end
 
-  interaction :run_command, :state, [%{key: key(:enter)}], state do
+  interaction :run_command, :command, [%{key: key(:enter)}], state do
     result =
       try do
         {result, _binding} = Code.eval_string(state[:command])
         result
       rescue
-        exception -> exception
+        exception ->
+          exception
       end
 
     Map.put(state, :result, result |> inspect())
@@ -29,6 +30,9 @@ defmodule Alice.Toys.Eval do
 
   default_interaction state, event do
     case event do
+      %{ch: 0, key: 32} ->
+        Map.put(state, :command, state[:command] <> " ")
+
       %{ch: char} ->
         Map.put(state, :command, state[:command] <> <<char::utf8>>)
 
