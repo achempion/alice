@@ -194,7 +194,7 @@ defmodule Alice.App do
             model[:pane],
             {
               :render,
-              context |> Map.merge(%{current_panel: %{height: 10}})
+              context |> Map.merge(%{current_panel: %{height: 10 - 3}})
             }
           )
         end
