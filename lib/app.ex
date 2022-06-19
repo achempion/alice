@@ -13,13 +13,14 @@ defmodule Alice.App do
   require Logger
 
   alias Alice.ToysSupervisor
-  alias Alice.Toys.{Welcome, ToyHelp}
+  alias Alice.Toys.{Editor, ToyHelp, Welcome}
   alias Alice.ScreenHelper
 
   @recompile %{key: key(:ctrl_r)}
   @close %{ch: ?q, mod: 1}
   @help %{ch: ??, mod: 1}
   @switch_focus %{ch: ?s, mod: 1}
+  @debug_state %{ch: ?d, mod: 1}
 
   @doc """
   How to quit vim
@@ -87,6 +88,14 @@ defmodule Alice.App do
         focus_pid = model[model[:focus]]
 
         Map.put(model, :window1, init_module(ToyHelp, focus_pid))
+        |> Map.put(:focus, :window1)
+
+      @debug_state ->
+        focus_pid = model[model[:focus]]
+
+        content = :sys.get_state(focus_pid) |> inspect(pretty: true)
+
+        Map.put(model, :window1, init_module(Editor, %{content: content}))
         |> Map.put(:focus, :window1)
 
       _ ->

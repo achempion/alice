@@ -12,6 +12,14 @@ defmodule Alice.Toys.Editor do
     }
   end
 
+  state %{content: content} do
+    %{
+      content: content,
+      content_lines: String.split(content, "\n"),
+      cursor_position: %{x: 0, y: 0}
+    }
+  end
+
   interaction :move_right, :state, [%{key: key(:arrow_right)}], state do
     put_in(state, [:cursor_position, :x], state.cursor_position.x + 1)
   end
